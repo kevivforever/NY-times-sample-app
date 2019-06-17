@@ -1,0 +1,30 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="com.vivek.nytimes.MainActivity">
+    <item android:id="@+id/action_science"
+          android:title="@string/action_science"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_technology"
+          android:title="@string/action_technology"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_business"
+          android:title="@string/action_business"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_world"
+          android:title="@string/action_world"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_movies"
+          android:title="@string/action_movies"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_travel"
+          android:title="@string/action_travel"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+
+</menu>
