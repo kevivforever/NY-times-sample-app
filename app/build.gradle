@@ -29,6 +29,7 @@ android {
         dev {
             applicationIdSuffix ".dev"
             buildConfigField(STRING, API_BASE_URL, BASE_URL_DEV)
+            buildConfigField(STRING, "API_KEY", API_KEY)
             dimension "tier"
         }
     }

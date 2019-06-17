@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context="com.vivek.nytimes.MainActivity">
+      tools:context="com.vivek.nytimes.ui.MainActivity">
     <item android:id="@+id/action_science"
           android:title="@string/action_science"
           android:orderInCategory="100"
