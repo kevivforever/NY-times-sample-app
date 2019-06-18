@@ -7,10 +7,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.vivek.nytimes.R
+import com.vivek.nytimes.data.local.DatabaseService
 import com.vivek.nytimes.data.model.Story
 import com.vivek.nytimes.data.remote.Networking
 import com.vivek.nytimes.data.repo.StoryRepository
 import com.vivek.nytimes.utils.Constants
+import com.vivek.nytimes.utils.Logger
 import com.vivek.nytimes.utils.Resource
 import com.vivek.nytimes.utils.Status
 import com.vivek.nytimes.utils.network.NetworkHelper
@@ -26,7 +28,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private val storyRepository: StoryRepository by lazy {
-        StoryRepository(Networking.create())
+        StoryRepository(Networking.create(), DatabaseService.getInstance(application))
     }
 
     private val compositeDisposable: CompositeDisposable by lazy {
@@ -97,10 +99,15 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             storiesLiveData.postValue(Resource.loading())
             compositeDisposable.add(
                 storyRepository.getTopStories(selectedSectionLiveData.value!!)
+                    .flatMap {
+                        storyRepository.saveStories(it)
+                        return@flatMap Observable.just(it)
+                    }
                     .subscribeOn(Schedulers.io())
                     .subscribe(
                         {
                             storiesLiveData.postValue(Resource.success(it))
+                            Logger.d("nytimes", storyRepository.countstories().toString())
                         },
                         {
                             handleNetworkError(it)

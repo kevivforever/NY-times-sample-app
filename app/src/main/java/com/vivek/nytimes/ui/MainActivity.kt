@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu
 import android.view.MenuItem
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.vivek.nytimes.R
@@ -19,13 +20,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ListViewModel
+    private var activeFragment: Fragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.vivek.nytimes.R.layout.activity_main)
         setSupportActionBar(toolbar)
         viewModel = ViewModelProviders.of(this).get(ListViewModel::class.java)
-        showHome()
+        showList()
         setupObservers()
     }
 
@@ -33,30 +35,52 @@ class MainActivity : AppCompatActivity() {
         viewModel.navigation.observe(this, Observer {
             it?.let {
                 if(it == DetailFragment.TAG) {
-                    showDetail()
+                    showStoryDetail()
                 }
             }
         })
     }
 
-    private fun showHome() {
+    private fun showList() {
 
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        val fragment = ListFragment.newInstance()
-        fragmentTransaction.replace(R.id.containerFragment, fragment)
+
+        var fragment = supportFragmentManager.findFragmentByTag(ListFragment.TAG) as ListFragment?
+
+        if (fragment == null) {
+            fragment = ListFragment.newInstance()
+            fragmentTransaction.add(R.id.containerFragment, fragment, ListFragment.TAG)
+            fragmentTransaction.addToBackStack(ListFragment.TAG)
+        } else {
+            fragmentTransaction.show(fragment)
+        }
+
         fragmentTransaction.commit()
+
     }
 
-    private fun showDetail() {
+    private fun showStoryDetail() {
+
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        val fragment = DetailFragment.newInstance()
-        fragmentTransaction.replace(R.id.containerFragment, fragment)
-        fragmentTransaction.addToBackStack(null)
+
+        var fragment = supportFragmentManager.findFragmentByTag(DetailFragment.TAG) as DetailFragment?
+        val listFragment = supportFragmentManager.findFragmentByTag(ListFragment.TAG) as ListFragment?
+
+        if (fragment == null) {
+            fragment = DetailFragment.newInstance()
+            fragmentTransaction.add(R.id.containerFragment, fragment, DetailFragment.TAG)
+            fragmentTransaction.addToBackStack(DetailFragment.TAG)
+        } else {
+            fragmentTransaction.show(fragment)
+        }
+        listFragment?.let { fragmentTransaction.hide(it) }
+
         fragmentTransaction.commit()
+
     }
 
     override fun onBackPressed() {
-        if(supportFragmentManager.backStackEntryCount > 0) {
+        if(supportFragmentManager.backStackEntryCount > 1) {
             supportFragmentManager.popBackStackImmediate()
         } else {
             super.onBackPressed()
