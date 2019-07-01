@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -13,11 +14,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.vivek.nytimes.R
+import com.vivek.nytimes.TimesApplication
 import com.vivek.nytimes.data.model.Story
 import com.vivek.nytimes.ui.detail.DetailFragment
 import com.vivek.nytimes.utils.Constants
 import com.vivek.nytimes.utils.Logger
+import com.yummic.di.component.DaggerFragmentComponent
+import com.yummic.di.module.ActivityModule
+import com.yummic.di.module.FragmentModule
 import kotlinx.android.synthetic.main.fragment_list.*
+import javax.inject.Inject
 
 class ListFragment: Fragment(), StoryItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
@@ -30,13 +36,25 @@ class ListFragment: Fragment(), StoryItemClickListener, SwipeRefreshLayout.OnRef
     }
 
     private lateinit var storyListAdapter: StoryListAdapter
-    private lateinit var viewModel: ListViewModel
+
+    @Inject
+    lateinit var viewModel: ListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        injectDependencies()
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        viewModel = ViewModelProviders.of(activity!!).get(ListViewModel::class.java)
         setupObservers()
+    }
+
+    private fun injectDependencies() {
+        DaggerFragmentComponent
+            .builder()
+            .applicationComponent((context?.applicationContext as TimesApplication).applicationComponent)
+            .fragmentModule(FragmentModule(this))
+            .activityModule(ActivityModule(activity as  AppCompatActivity))
+            .build()
+            .inject(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

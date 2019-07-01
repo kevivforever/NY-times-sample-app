@@ -10,25 +10,38 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.vivek.nytimes.R
+import com.vivek.nytimes.TimesApplication
 import com.vivek.nytimes.ui.detail.DetailFragment
 import com.vivek.nytimes.ui.list.ListFragment
 import com.vivek.nytimes.ui.list.ListViewModel
 import com.vivek.nytimes.utils.Logger
+import com.yummic.di.component.DaggerActivityComponent
+import com.yummic.di.module.ActivityModule
 
 import kotlinx.android.synthetic.main.activity_main.*
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: ListViewModel
-    private var activeFragment: Fragment? = null
+    @Inject
+    lateinit var viewModel: ListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        injectDependencies()
         super.onCreate(savedInstanceState)
         setContentView(com.vivek.nytimes.R.layout.activity_main)
         setSupportActionBar(toolbar)
-        viewModel = ViewModelProviders.of(this).get(ListViewModel::class.java)
         showList()
         setupObservers()
+    }
+
+    private fun injectDependencies() {
+        DaggerActivityComponent
+            .builder()
+            .applicationComponent((application as TimesApplication).applicationComponent)
+            .activityModule(ActivityModule(this))
+            .build()
+            .inject(this)
     }
 
     private fun setupObservers() {

@@ -2,10 +2,7 @@ package com.vivek.nytimes.ui.list
 
 import android.annotation.SuppressLint
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.*
 import com.vivek.nytimes.R
 import com.vivek.nytimes.data.local.DatabaseService
 import com.vivek.nytimes.data.model.Story
@@ -17,23 +14,14 @@ import com.vivek.nytimes.utils.Resource
 import com.vivek.nytimes.utils.Status
 import com.vivek.nytimes.utils.network.NetworkHelper
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import javax.net.ssl.HttpsURLConnection
 
-class ListViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val networkHelper: NetworkHelper by lazy {
-        NetworkHelper(application)
-    }
-
-    private val storyRepository: StoryRepository by lazy {
-        StoryRepository(Networking.create(), DatabaseService.getInstance(application))
-    }
-
-    private val compositeDisposable: CompositeDisposable by lazy {
-        CompositeDisposable()
-    }
+class ListViewModel(private val networkHelper: NetworkHelper,
+                    private val storyRepository: StoryRepository,
+                    private val compositeDisposable: CompositeDisposable) : ViewModel() {
 
     private val messageStringIdLiveData: MutableLiveData<Resource<Int>> = MutableLiveData()
     private val messageLiveData: MutableLiveData<Resource<String>> = MutableLiveData()
@@ -41,6 +29,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     private val selectedStoryLiveData: MutableLiveData<Story> = MutableLiveData()
     private val selectedSectionLiveData: MutableLiveData<String> = MutableLiveData()
     val navigation: MutableLiveData<String> = MutableLiveData()
+    val categoriesCountLiveData: MutableLiveData<Int> = MutableLiveData()
 
     init {
         selectedSectionLiveData.value = Constants.SECTION_SCIENCE
@@ -107,7 +96,6 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                     .subscribe(
                         {
                             storiesLiveData.postValue(Resource.success(it))
-                            Logger.d("nytimes", storyRepository.countstories().toString())
                         },
                         {
                             handleNetworkError(it)
@@ -116,6 +104,18 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                     )
             )
         }
+    }
+
+    fun onViewCreated() {
+        compositeDisposable.add(
+            storyRepository.totalstories()
+            .subscribeOn(Schedulers.io())
+            .subscribe( {
+                categoriesCountLiveData.value = it
+            }, {
+
+            })
+        )
     }
 
     fun showStorydetail(tag : String) {

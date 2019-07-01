@@ -22,18 +22,4 @@ abstract class DatabaseService : RoomDatabase() {
 
     abstract fun storyDao(): StoryDao
 
-    companion object {
-
-        @Volatile private var INSTANCE: DatabaseService? = null
-
-        fun getInstance(context: Context): DatabaseService =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
-            }
-
-        private fun buildDatabase(context: Context) =
-            Room.databaseBuilder(context.applicationContext,
-                DatabaseService::class.java, "nytimes")
-                .build()
-    }
 }

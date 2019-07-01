@@ -18,9 +18,16 @@ import kotlinx.android.synthetic.main.fragment_detail.*
 import android.content.Intent
 import android.net.Uri
 import android.text.format.DateUtils
+import androidx.appcompat.app.AppCompatActivity
+import com.vivek.nytimes.TimesApplication
+import com.vivek.nytimes.utils.Logger
+import com.yummic.di.component.DaggerFragmentComponent
+import com.yummic.di.module.ActivityModule
+import com.yummic.di.module.FragmentModule
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 
 class DetailFragment: Fragment() {
@@ -32,13 +39,24 @@ class DetailFragment: Fragment() {
         }
     }
 
-    private lateinit var viewModel: ListViewModel
+    @Inject
+    lateinit var viewModel: ListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        injectDependencies()
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        viewModel = ViewModelProviders.of(activity!!).get(ListViewModel::class.java)
         setupObservers()
+    }
+
+    private fun injectDependencies() {
+        DaggerFragmentComponent
+            .builder()
+            .applicationComponent((context?.applicationContext as TimesApplication).applicationComponent)
+            .fragmentModule(FragmentModule(this))
+            .activityModule(ActivityModule(activity as  AppCompatActivity))
+            .build()
+            .inject(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -52,6 +70,15 @@ class DetailFragment: Fragment() {
             }
         })
 
+        viewModel.categoriesCountLiveData.observe(this, Observer {
+            Toast.makeText( context, "total story in room db $it", Toast.LENGTH_SHORT).show()
+        })
+
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.onViewCreated()
     }
 
     private fun initializeUI(story: Story) {

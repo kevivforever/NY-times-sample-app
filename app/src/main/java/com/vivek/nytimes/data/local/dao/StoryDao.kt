@@ -9,6 +9,7 @@ import com.vivek.nytimes.data.local.Converter
 import com.vivek.nytimes.data.model.Story
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 
 
@@ -22,8 +23,8 @@ interface StoryDao {
     fun insertAllStories(stories: List<Story>): Completable
 
     @Query("SELECT * FROM stories")
-    fun getAllStories(): Flowable<List<Story>>
+    fun getAllStories(): Observable<List<Story>>
 
     @Query("SELECT COUNT(*) from stories")
-    fun countCategories(): Int
+    fun countStories(): Observable<Int>
 }
